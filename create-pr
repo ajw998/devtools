@@ -1,17 +1,26 @@
 #!/bin/zsh
 # Command to automatically create Pull Requests on Github
-
-BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-
-# Check if current branch has been pushed to git remote
-git ls-remote --exit-code --heads $(git remote get-url --push origin) $BRANCH_NAME
-
-if [[ "$?" == "2" ]]; then 
-    echo "Branch does not on remote"; 
-    git push -u origin HEAD --no-verify
+#
+if ! command -v gh &> /dev/null; then
+    echo "Github CLI not installed. Please check https://github.com/cli/cli"
+    exit 1
 fi
 
-echo "Committing and pushing all change…"
-git add --all . && git commit -m "$BRANCH_NAME Auto-commit" && git push -u origin HEAD
+DEFAULT_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD | sed -n 's/origin\///p')
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+if [[ $DEFAULT_BRANCH != $BRANCH_NAME ]]; then
+    # Check if current branch has been pushed to git remote
+    git ls-remote --exit-code --heads $(git remote get-url --push origin) $BRANCH_NAME
+    if [[ "$?" == "2" ]]; then 
+        echo "Branch does not on remote"; 
+        git push -u origin HEAD --no-verify
+    else
+        echo "Committing and pushing all change…"
+        git add --all . && git commit -m "Work commited on $(date)" --no-verify && git push
+    fi
+    # Create Pull Request on Github
+    gh pr create --fill --assignee @me
+else
+    echo "Current branch ($BRANCH_NAME) must be different to base branch ($DEFAULT_BRANCH)"
+fi 
 
-gh pr create --fill --assignee @me
