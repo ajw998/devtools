@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Command to automatically create Pull Requests on Github
-#
+
 if ! command -v gh &> /dev/null; then
     echo "Github CLI not installed. Please check https://github.com/cli/cli"
     exit 1
@@ -12,7 +12,7 @@ if [[ $DEFAULT_BRANCH != $BRANCH_NAME ]]; then
     # Check if current branch has been pushed to git remote
     git ls-remote --exit-code --heads $(git remote get-url --push origin) $BRANCH_NAME
     if [[ "$?" == "2" ]]; then 
-        echo "Branch does not on remote"; 
+        echo "Branch does not exist on remote origin. Pushing branch to remote…"; 
         git push -u origin HEAD --no-verify
     else
         echo "Committing and pushing all change…"
