@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+# Get all contributions for specific author
+
+[ ! -d .git ] && echo "Not in git repoistory"; exit 1 || git rev-parse --git-dir > /dev/null 2>&1
+
+# Show all contributors of a git repository
+AUTHOR=$(git shortlog -sn | awk '{ print $2 }' | fzf -m)
+
+git log --pretty=format:"%ad%x09%h%x09%an%x09%s" --author=$AUTHOR --date=short | tail -n 10
