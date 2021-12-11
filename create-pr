@@ -8,18 +8,21 @@ fi
 
 DEFAULT_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD | sed -n 's/origin\///p')
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+BASE_BRANCH=${1:-master}
+
 if [[ $DEFAULT_BRANCH != $BRANCH_NAME ]]; then
-    # Check if current branch has been pushed to git remote
+    # Check if current branch has been pushed to remote
     git ls-remote --exit-code --heads $(git remote get-url --push origin) $BRANCH_NAME
     if [[ "$?" == "2" ]]; then 
         echo "Branch does not exist on remote origin. Pushing branch to remote…"; 
         git push -u origin HEAD --no-verify
     else
+        # Liberal use of --no-verify to suppress annoying pre-commit and pre-push hooks
         echo "Committing and pushing all change…"
-        git add --all . && git commit -m "Work commited on $(date)" --no-verify && git push
+        git add --all . && git commit -m "Work commited on $(date)" --no-verify && git push --no-verify
     fi
     # Create Pull Request on Github
-    gh pr create --fill --assignee @me
+    gh pr create --fill --assignee @me --base $BASE_BRANCH
 else
     echo "Current branch ($BRANCH_NAME) must be different to base branch ($DEFAULT_BRANCH)"
 fi 
