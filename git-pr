@@ -1,0 +1,12 @@
+#!/bin/sh
+
+REPO=${2:-ajw998}
+
+response=$(curl -sb -H "Content-Type: application/json" -u $GH_USERNAME:$GH_TOKEN "https://api.github.com/search/issues?q=$1+type%3Apr+is%3Amerged+repo%3A${REPO}%2F${PWD##*/}&sort=created&order=desc")
+
+output=$(jq -r ".items[] | {html_url} | select(.html_url != null) | values[]" <<< "${response}")
+
+ for i in $output
+ do
+   open $i
+ done
